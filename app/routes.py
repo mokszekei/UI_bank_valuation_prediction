@@ -1,10 +1,13 @@
 from flask import render_template, url_for, flash, redirect, request
 from app import app, db, bcrypt
 from app.forms import RegistrationForm, LoginForm, PredictForm
-from app.models import User, Post
+from app.models import User, Post, History
 from flask_login import login_user, current_user, logout_user, login_required
 import pickle
 import numpy as np
+from datetime import datetime
+import json
+import requests 
 
 posts = [
     {
@@ -21,12 +24,11 @@ posts = [
     }
 ]
 
-var = ["eqtot","eq","IDP3REDM","IDNAREDM"]
-
-model = pickle.load(open('model.pkl', 'rb'))
+# model = pickle.load(open('model.pkl', 'rb'))
 
 
 @app.route("/")
+
 @app.route("/home")
 def home():
     return render_template('home.html', posts=posts)
@@ -79,45 +81,71 @@ def logout():
 def account():
     return render_template('account.html', title='Account')
 
-@app.route("/base")
-@login_required
-def base():
-    return render_template('base.html', title='Account')
+
+# @app.route('/predict', methods=['GET', 'POST'])
+# def predict():
+#     return render_template('predict.html')
 
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
     form = PredictForm()
     if form.validate_on_submit():
-        final_features = np.zeros(3)
+        final_features = np.zeros(18)
         final_features[0] = form.eqtot.data
         final_features[1] = form.eq.data
         final_features[2] = form.IDP3REDM.data
-        final_features = [final_features]
-        prediction = model.predict(final_features)
-        output = round(prediction[0], 2)
+        final_features[3] = form.IDNAREDM.data
+        final_features[4] = form.RBCT1J.data
+        final_features[5] = form.liabeq.data
+        final_features[6] = form.Lnrenr2N.data
+        final_features[7] = form.crcon.data
+        final_features[8] = form.crci.data
+        final_features[9] = form.Lnag1.data
+        final_features[10] = form.intexpy.data
+        final_features[11] = form.esal.data
+        final_features[12] = form.eeffr.data
+        final_features[13] = form.depdastr.data
+        final_features[14] = form.NTRTMMED.data
+        final_features[15] = form.elnatry.data
+        final_features[16] = form.nare.data
+        final_features[17] = form.p3re.data
+        final_features = [final_features.tolist()]
+        
+        scoring_uri = 'http://b4f7f8bc-8a7f-42fc-8759-b17db8bb8b22.westus2.azurecontainer.io/score'
+     
+        data = {"data": final_features}
+        input_data = json.dumps(data)
+        headers= {'Content-Type': 'application/json'}
+        resp = requests.post(scoring_uri, input_data, headers=headers)
+        
+        output  = json.loads(resp.text)
+        # output  = resp.text
+        output = output[0][0]
+
+        history = History(input1 = final_features[0][0],
+            input2 = final_features[0][1],
+            input3 = final_features[0][2],
+            output = output,
+            time = datetime.now())
+
+        found_user = User.query.filter_by(username=current_user.username).first()
+        found_user.history.append(history)
+        # db.create_all()
+        db.session.add(found_user)
+        db.session.add(history)
+        db.session.commit()
         return render_template('predict_form.html', title='Login', form=form, prediction_text='Your bank evaluation is estimated as $ {}'.format(output))
 
     return render_template('predict_form.html',title='Login', form=form)
 
+@app.route("/view")
+def view():
+    return render_template("view.html", values=History.query.all())
 
-# @app.route('/result',methods=['POST'])
-# def result():
-#     form = PredictForm()
-#     # int_features = [int(x) for x in request.form.values()]
-#     # final_features = [np.array(int_features)]
-#     final_features = np.zeros(3)
-#     final_features[0] = form.eqtot.data
-#     final_features[1] = form.eq.data
-#     final_features[2] = form.IDP3REDM.data
-
-#     final_features = [final_features]
-#     prediction = model.predict(final_features)
-
-#     output = round(prediction[0], 2)
-
-#     return render_template('predict_form.html', title='Login', form=form, prediction_text='Your bank evaluation is estimated as $ {}'.format(output))
-
+@app.route("/viewaccount")
+def viewaccount():
+    return render_template("viewaccount.html", values=User.query.all())
 
 @app.errorhandler(404)
 def not_found_error(error):
@@ -130,3 +158,4 @@ def not_found_error(error):
 @app.route('/404')
 def e404e():
     return render_template('404.html')
+

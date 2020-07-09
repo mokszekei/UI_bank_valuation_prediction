@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
 
+
 <head>
   <meta charset="UTF-8">
   <title>Side Navigation Bar</title>
@@ -10,7 +11,6 @@
 <body>
 
 <div class="wrapper">
-  
     <div class="sidebar">
         <!-- <img src="/Users/mosiqi/Neocova-/LoginPage+model+menu/static/logo.png" style="width:200 px;height:80px;"> -->
         <img src="{{ url_for('static', filename='logo.png') }}" style="width:200 px;height:80px;">
@@ -18,7 +18,6 @@
             <li><a href="#"><i class="fas fa-home"></i>Home</a></li>
             <li><a href="#"><i class="fas fa-user"></i>My profile</a></li>
             <li><a href="#"><i class="fas fa-question-circle"></i>Help</a></li>
-            <li><a href="#"><i class="nav-item nav-link" href="{{ url_for('predict') }}">Prediction Tool</a><li>
         </ul> 
         <div class="social_media">
           <a href="#"><i class="fab fa-facebook-f"></i></a>
@@ -32,11 +31,11 @@
             {% block base_content %}
             {% endblock  %}
         </div>
-  
 
 
 
 </div>
 
 </body>
-{% endblock content %}
+
+{% endblock %}
