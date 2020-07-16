@@ -31,5 +31,6 @@
         ".vscode{,/**}"
     ],
     "appService.defaultWebAppToDeploy": "/subscriptions/de1faa6a-bb72-4633-8d66-b148cb10deb9/resourceGroups/Main/providers/Microsoft.Web/sites/NeocovaModel2",
-    "appService.deploySubpath": "."
+    "appService.deploySubpath": ".",
+    "python.pythonPath": "/usr/local/bin/python3"
 }

@@ -25,7 +25,7 @@ posts = [
 ]
 
 # model = pickle.load(open('model.pkl', 'rb'))
-
+# db.create_all()
 
 @app.route("/")
 
@@ -46,7 +46,7 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+        user = User(username=form.username.data, email=form.email.data, City = form.City.data, State = form.State.data, Zip = form.Zip.data, Company = form.Company.data, Department = form.Department.data, Title = form.Title.data, password=hashed_password)
         db.session.add(user)
         db.session.commit()
         flash('Your account has been created! You are now able to log in', 'success')
@@ -112,7 +112,8 @@ def predict():
         final_features[17] = form.p3re.data
         final_features = [final_features.tolist()]
         
-        scoring_uri = 'http://b4f7f8bc-8a7f-42fc-8759-b17db8bb8b22.westus2.azurecontainer.io/score'
+        #  New endpoint
+        scoring_uri = 'http://0178975c-a432-4797-a195-75c3c6b3bc3d.westus2.azurecontainer.io/score'
      
         data = {"data": final_features}
         input_data = json.dumps(data)
